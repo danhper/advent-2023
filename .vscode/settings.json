@@ -1,0 +1,10 @@
+{
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "file",
+  "[fsharp]": {
+    "editor.inlayHints.enabled": "offUnlessPressed"
+  },
+  "github.copilot.enable": {
+    "fsharp": false
+  }
+}
