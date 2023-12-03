@@ -1,8 +1,9 @@
 ﻿let run day suffix =
-    let lines = Utils.getFileName day suffix |> Utils.readLines
+    let lines = Utils.IO.getFileName day suffix |> Utils.IO.readLines
     match day with
     | "1" -> Day1.run lines
     | "2" -> Day2.run lines
+    | "3" -> Day3.run lines
     | n -> failwithf "error: unknown day %s" n
 
 let get_args args =
