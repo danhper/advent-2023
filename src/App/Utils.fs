@@ -7,6 +7,7 @@ namespace Utils
             a
         
         let isDigit = System.Char.IsDigit
+        let flip f a b = f b a
 
     module IO = 
         open System.IO
