@@ -15,7 +15,7 @@ let groupNumbers grid =
     else List.rev lastNumber :: numbers
 
 let hasAdjacentSymbol grid  point =
-    let neighbors = Grid2D.neighbors point grid
+    let neighbors = Grid2D.neighbors true point grid
     List.exists (fun (_, v) -> v <> '.' && not (isDigit v)) neighbors
 
 let isGroupNumberRelevant grid groupNumber =
@@ -25,7 +25,7 @@ let numberToInt number =
     String.concat "" (List.map (snd >> string) number) |> int
 
 let adjacentNumbers numbers point =
-    let pred digits = List.exists (fun (p, _) -> List.contains point (Point2D.neighbors p)) digits
+    let pred digits = List.exists (fun (p, _) -> List.contains point (Point2D.neighbors true p)) digits
     List.filter pred numbers
 
 let findGears grid =

@@ -5,8 +5,8 @@ type Grid2D<'a> = Map<Point2D, 'a>
 module Grid2D =
     let empty: Grid2D<'a> = Map.empty
 
-    let neighbors point grid =
-        let neighboringPoints = Point2D.neighbors point
+    let neighbors includeDiagonals point grid =
+        let neighboringPoints = Point2D.neighbors includeDiagonals point
         let getValue p = Map.tryFind p grid |> Option.map (fun v -> (p, v))
         List.choose getValue neighboringPoints
 
