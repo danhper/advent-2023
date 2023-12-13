@@ -29,7 +29,7 @@ let solve expandedGalaxies =
     List.sum distances
 
 let run lines =
-    let galaxyGrid = Grid2D.fromLines lines |> Map.filter (fun _ v -> v = '#')
+    let galaxyGrid = Grid2D.fromLines lines |> _.map |> Map.filter (fun _ v -> v = '#')
     let galaxies = galaxyGrid |> Map.keys |> Set.ofSeq |> Set.map (fun (x, y) -> (uint64 x, uint64 y))
     let expandedGalaxies = expandSpace 2UL galaxies
     let superExpandedGalaxies = expandSpace 1000000UL galaxies

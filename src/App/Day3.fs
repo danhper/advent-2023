@@ -2,14 +2,14 @@ module Day3
 
 open Utils
 
-let groupNumbers grid =
+let groupNumbers { map = map } =
     let folder (numbers, currentNumber) ((_, y) as point, value) =
         match currentNumber with
         | [] when isDigit value -> (numbers, (point, value) :: currentNumber)
         | ((_, y'), _) :: _ when isDigit value && y = y' -> (numbers, (point, value) :: currentNumber)
         | [] -> (numbers, List.empty)
         | number -> (List.rev number :: numbers, List.empty)
-    let orderedCells = Map.toList grid |> List.sortBy (fun ((x, y), _) -> (y, x))
+    let orderedCells = Map.toList map |> List.sortBy (fun ((x, y), _) -> (y, x))
     let (numbers, lastNumber) = List.fold folder (List.empty, List.empty) orderedCells
     if List.isEmpty lastNumber then numbers
     else List.rev lastNumber :: numbers
@@ -35,8 +35,8 @@ let part1 numbers =
     let ints = List.map numberToInt numbers
     printfn "part 1: %d" (List.sum ints)
 
-let part2 grid numbers =
-    let gears = findGears grid
+let part2 { map = map } numbers =
+    let gears = findGears map
     let validGears = List.filter (fun gear -> List.length (adjacentNumbers numbers gear) = 2) gears
     let processGear = adjacentNumbers numbers >> List.map numberToInt >> List.reduce (*)
     let result = List.sum (List.map processGear validGears)

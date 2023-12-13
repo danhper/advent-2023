@@ -102,8 +102,8 @@ let part2 grid loop =
     printfn "part 2: %d" (Seq.length pointsIn)
 
 let run lines =
-    let rawGrid = Grid2D.fromLines lines
-    let (start, grid) = transformGrid rawGrid
-    let loop = findLoop start grid
+    let { map = rawMap } = Grid2D.fromLines lines
+    let (start, map) = transformGrid rawMap
+    let loop = findLoop start map
     printfn "part 1: %d" (Set.count loop / 2)
-    part2 grid loop
+    part2 map loop
