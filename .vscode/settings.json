@@ -1,5 +1,5 @@
 {
-  "editor.formatOnSave": true,
+  "editor.formatOnSave": false,
   "editor.formatOnSaveMode": "file",
   "[fsharp]": {
     "editor.inlayHints.enabled": "offUnlessPressed"
