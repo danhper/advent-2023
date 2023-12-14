@@ -11,11 +11,11 @@ let expandDimension multiplier dims =
 
 let expandSpace multiplier galaxies =
     let expand galaxies f =
-        let indexed = List.sortBy snd (List.mapi (fun i v -> (i, f v)) (Set.toList galaxies))
+        let indexed = List.sortBy snd (List.mapi (fun i v -> (i, f v)) galaxies)
         expandDimension multiplier indexed |> List.sortBy fst |> List.map snd
     let expandedX = expand galaxies fst
     let expandedY = expand galaxies snd
-    List.zip expandedX expandedY |> Set.ofList
+    List.zip expandedX expandedY
 
 let getPairs elems =
     let rec computePairs = function
@@ -30,8 +30,8 @@ let solve expandedGalaxies =
 
 let run lines =
     let galaxyGrid = Grid2D.fromLines lines |> _.map |> Map.filter (fun _ v -> v = '#')
-    let galaxies = galaxyGrid |> Map.keys |> Set.ofSeq |> Set.map (fun (x, y) -> (uint64 x, uint64 y))
+    let galaxies = galaxyGrid |> Map.keys |> List.ofSeq |> List.map (fun (x, y) -> (uint64 x, uint64 y))
     let expandedGalaxies = expandSpace 2UL galaxies
     let superExpandedGalaxies = expandSpace 1000000UL galaxies
-    printfn "part 1: %d" (solve (Set.toList expandedGalaxies))
-    printfn "part 2: %d" (solve (Set.toList superExpandedGalaxies))
+    printfn "part 1: %d" (solve expandedGalaxies)
+    printfn "part 2: %d" (solve superExpandedGalaxies)
