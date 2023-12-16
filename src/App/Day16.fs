@@ -12,7 +12,7 @@ module Cell =
     | '-' -> HSplitter
     | c -> failwithf "invalid cell %c" c
 
-let computeNextBeams position dir { map = map } =
+let computeNextBeams (position, dir) { map = map } =
     let next d = (Direction.moveTo position d, d)
     let nextBeams =
         match Map.find position map, dir with
@@ -32,27 +32,21 @@ let computeNextBeams position dir { map = map } =
         | HSplitter, _ -> [next East; next West]
     List.filter (fst >> flip Map.containsKey map) nextBeams
 
-let findEnergizedCells init grid =
+let computeEnergizedCellsCount grid init =
     let rec run beams seen =
-        if Set.isEmpty beams then seen |> Set.map fst
-        else
-            let nextSeen = Set.union seen beams
-            let getNextBeams (point, dir) = Set.ofList (computeNextBeams point dir grid)
-            let nextBeams = Set.unionMany (List.map getNextBeams (Set.toList beams))
-            run (Set.difference nextBeams seen) nextSeen
-    run (Set.ofList [init]) Set.empty
+        match beams with
+        | [] -> Set.count <| Set.map fst seen
+        | b :: bs when Set.contains b seen -> run bs seen
+        | b :: bs -> run (computeNextBeams b grid @ bs) (Set.add b seen)
+    run [init] Set.empty
 
-let findMaxEnergizedCells ({ height = height; width = width } as grid) =
-    let leftStart = List.map (fun y -> ((0, y), East)) [0..height - 1]
-    let rightStart = List.map (fun y -> ((width - 1, y), West)) [0..height - 1]
-    let topStart = List.map (fun x -> ((x, 0), South)) [0..width - 1]
-    let bottomStart = List.map (fun x -> ((x, height - 1), North)) [0..width - 1]
-    let allStarts = List.concat [leftStart; rightStart; topStart; bottomStart]
-    let energizedCounts = Array.Parallel.map ((flip findEnergizedCells) grid >> Set.count) (Array.ofList allStarts)
+let computeMaxEnergizedCellsCount ({ height = height; width = width } as grid) =
+    let yStarts = List.collect (fun y -> [((0, y), East); ((width - 1, y), West)]) [0..height - 1]
+    let xStarts = List.collect (fun x -> [((x, 0), South); ((x, height - 1), North)]) [0..width - 1]
+    let energizedCounts = Array.Parallel.map (computeEnergizedCellsCount grid) (Array.ofList (yStarts @ xStarts))
     Array.max energizedCounts
 
 let run lines =
     let grid = Grid2D.fromLines lines |> Grid2D.map (fun _ c -> Cell.fromChar c)
-    let energizedCells = findEnergizedCells ((0, 0), East) grid
-    printfn "part 1: %d" (Set.count energizedCells)
-    printfn "part 2: %d" (findMaxEnergizedCells grid)
+    printfn "part 1: %d" (computeEnergizedCellsCount grid ((0, 0), East))
+    printfn "part 2: %d" (computeMaxEnergizedCellsCount grid)
