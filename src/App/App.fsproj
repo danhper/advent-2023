@@ -6,6 +6,7 @@
   <ItemGroup>
     <Compile Include="Point.fs" />
     <Compile Include="Utils.fs" />
+    <Compile Include="Direction.fs" />
     <Compile Include="Grid.fs" />
     <Compile Include="Day1.fs" />
     <Compile Include="Day2.fs" />
@@ -22,6 +23,7 @@
     <Compile Include="Day13.fs" />
     <Compile Include="Day14.fs" />
     <Compile Include="Day15.fs" />
+    <Compile Include="Day16.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>

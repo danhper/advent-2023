@@ -8,6 +8,7 @@ type Grid2D<'a> = {
 
 module Grid2D =
     let empty: Grid2D<'a> = { map = Map.empty; height = 0; width = 0 }
+    let map f grid = { map = Map.map f grid.map; height = grid.height; width = grid.width }
 
     let neighbors includeDiagonals point { map = map } =
         let neighboringPoints = Point2D.neighbors includeDiagonals point
