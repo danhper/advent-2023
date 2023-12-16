@@ -33,15 +33,14 @@ let computeNextBeams position dir { map = map } =
     List.filter (fst >> flip Map.containsKey map) nextBeams
 
 let findEnergizedCells init grid =
-    let rec run beams usedBeams seen =
-        if Set.isEmpty beams then seen
+    let rec run beams seen =
+        if Set.isEmpty beams then seen |> Set.map fst
         else
-            let nextUsedBeams = Set.union usedBeams beams
-            let nextSeen = Set.union seen (Set.map fst beams)
+            let nextSeen = Set.union seen beams
             let getNextBeams (point, dir) = Set.ofList (computeNextBeams point dir grid)
             let nextBeams = Set.unionMany (List.map getNextBeams (Set.toList beams))
-            run (Set.difference nextBeams nextUsedBeams) nextUsedBeams nextSeen
-    run (Set.ofList [init]) Set.empty Set.empty
+            run (Set.difference nextBeams seen) nextSeen
+    run (Set.ofList [init]) Set.empty
 
 let findMaxEnergizedCells ({ height = height; width = width } as grid) =
     let leftStart = List.map (fun y -> ((0, y), East)) [0..height - 1]

@@ -30,7 +30,10 @@ let get_args args =
 let main args =
     try
         let (day, suffix) = get_args args
+        let stopwatch = System.Diagnostics.Stopwatch()
+        stopwatch.Start()
         run day suffix
+        printfn "Executed in %dms" stopwatch.ElapsedMilliseconds
         0
     with msg ->
         printfn "%s" msg.Message
