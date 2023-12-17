@@ -16,14 +16,10 @@ module RangeMap =
         | [destination; source; length] -> { destination = destination; source = source; length = length }
         | _ -> failwithf "wrong range format"
 
-    let private mapRange value length src dest =
-        if inRange value (src, src + length - 1UL)
-            then Some(value - src + dest)
+    let mapRange value r =
+        if inRange value (r.source, r.source + r.length - 1UL)
+            then Some (value - r.source + r.destination, r.source + r.length - value)
             else None
-    
-    let map value r = mapRange value r.length r.source r.destination
-
-    let invMap value r = mapRange value r.length r.destination r.source
 
 type RangeMapping = {
     name: string;
@@ -31,14 +27,17 @@ type RangeMapping = {
 }
 
 module RangeMapping =
-    let map m value =
-        List.tryFind Option.isSome (List.map (RangeMap.map value) m.ranges)
-            |> Option.flatten
-            |> Option.defaultValue value
-    let invMap m value = 
-        match List.choose (RangeMap.invMap value) m.ranges with
-        | [] -> [value]
-        | result -> result
+    let mapRange m value =
+        let range = List.tryFind Option.isSome (List.map (RangeMap.mapRange value) m.ranges) |> Option.flatten
+        match range with
+        | Some r -> r
+        | None ->
+            let rangesAbove = m.ranges |> List.filter (fun r -> r.source > value)
+            if List.isEmpty rangesAbove then (value, pown 2UL 63)
+            else 
+                let closestRange = List.minBy (_.source) rangesAbove
+                (value, closestRange.source - value)
+
 
 let pseeds = pstring "seeds: " >>. sepBy puint64 (pstring " ") .>> newline .>> newline
 let pmappingName = many1Chars (satisfy ((<>) ' ')) .>> pstring " map:" .>> newline
@@ -46,36 +45,32 @@ let prange = sepBy1 puint64 (pstring " ") |>> RangeMap.ofList
 let pmapping = pmappingName .>>. sepEndBy1 prange newline |>> fun (name, ranges) -> { name = name; ranges = ranges }
 let parser = pseeds .>>. sepBy1 pmapping newline
 
-let getSeedLocation rangeMappings seed =
-    let folder acc m = RangeMapping.map m acc
-    List.fold folder seed rangeMappings
-
-let getClosestSeed seeds rangeMappings =
-    let seedLocations = List.map (getSeedLocation rangeMappings) seeds
-    List.min seedLocations
-
-let part1 seeds rangeMappings =
-    let closestSeed = getClosestSeed seeds rangeMappings
-    printfn "part1: %d" closestSeed
-
 let getRange list =
     match list with
-    | [a; b] -> (a, a + b - 1UL)
+    | [a; b] -> (a, b)
     | _ -> failwithf "invalid range"
 
-let findSeeds location invRangeMappings =
-    let folder acc m =
-        List.collect (RangeMapping.invMap m) acc
-    List.fold folder [location] invRangeMappings
+let partialMapSeedRange (seed, size) rangeMappings =
+    let folder (value, rangeSize) rangeMapping =
+        let (newValue, size) = RangeMapping.mapRange rangeMapping value
+        (newValue, min rangeSize size)
+    List.fold folder (seed, size) rangeMappings
 
-let seedExists seedRanges seed = List.exists (inRange seed) seedRanges
+let rec mapSeedRange (seed, size) rangeMappings =
+    let (value, rangeSize) = partialMapSeedRange (seed, size) rangeMappings
+    if rangeSize >= size then value
+    else
+        min value (mapSeedRange (seed + rangeSize, size - rangeSize) rangeMappings)
 
 let part2 seeds rangeMappings =
     let seedRanges = List.chunkBySize 2 seeds |> List.map getRange
-    let invRangeMappings = List.rev rangeMappings
-    let predicate location = List.exists (seedExists seedRanges) (findSeeds location invRangeMappings)
-    let closestLocation = Seq.find predicate (Seq.initInfinite uint64)
-    printfn "part 2: %d" closestLocation
+    let minimums = List.map (fun sr -> mapSeedRange sr rangeMappings) seedRanges
+    printfn "part 2: %d" (List.min minimums)
+
+let part1 seeds rangeMappings =
+    let seedRanges = List.map (fun s -> (s, 1UL)) seeds
+    let minimums = List.map (fun sr -> mapSeedRange sr rangeMappings) seedRanges
+    printfn "part 1: %d" (List.min minimums)
 
 let run lines =
     let input = String.concat "\n" lines
