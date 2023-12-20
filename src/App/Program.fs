@@ -19,6 +19,7 @@
     | "15" -> Day15.run lines
     | "16" -> Day16.run lines
     | "19" -> Day19.run lines
+    | "20" -> Day20.run lines
     | n -> failwithf "error: unknown day %s" n
 
 let get_args args =

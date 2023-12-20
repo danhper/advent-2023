@@ -9,6 +9,13 @@ namespace Utils
         let isDigit = System.Char.IsDigit
         let flip f a b = f b a
 
+        let rec gcd a b =
+            if b = 0UL then a
+            else gcd b (a % b)
+
+        let lcm a b = a * (b / (gcd a b))
+
+
     module IO = 
         open System.IO
         let dataDir =

@@ -1,6 +1,7 @@
 module Day8
 
 open FParsec
+open Utils
 
 let pname = manyChars (satisfy isAsciiUpper)
 let ptuple = pchar '(' >>. pname .>> pstring ", " .>>. pname .>> pchar ')'
@@ -26,12 +27,6 @@ let computeStepsToDestination pred node instructions graph =
 
 let endsWith (c: char) (s: string) = s.EndsWith(c)
 
-let rec gcd a b =
-    if b = 0UL then a
-    else gcd b (a % b)
-
-let lcm a b = a * (b / (gcd a b))
-
 let part2 instructions graph =
     let nodes = Seq.filter (endsWith 'A') (Map.keys graph) |> List.ofSeq
     let computeDistance node = computeStepsToDestination (endsWith 'Z') node instructions graph
@@ -42,7 +37,7 @@ let part2 instructions graph =
 
 let run lines =
     let instructions = List.head lines |> List.ofSeq
-    let graph = List.map (Utils.Parsing.runf pnode) (List.skip 2 lines) |> Graph.ofNodes
+    let graph = List.map (Parsing.runf pnode) (List.skip 2 lines) |> Graph.ofNodes
     let part1 = computeStepsToDestination ((=) "ZZZ") "AAA" instructions graph
     printfn "part 1: %d" part1
     part2 instructions graph
