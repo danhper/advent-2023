@@ -24,9 +24,11 @@
     <Compile Include="Day14.fs" />
     <Compile Include="Day15.fs" />
     <Compile Include="Day16.fs" />
+    <Compile Include="Day19.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FParsec" Version="1.1.1" />
+    <PackageReference Include="FSharpx.Collections" Version="3.1.0" />
   </ItemGroup>
 </Project>
