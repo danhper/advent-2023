@@ -2,12 +2,15 @@ namespace Utils
 
 type Direction = North | South | East | West
 module Direction =
-    let moveTo (x, y) direction =
+    let all = [North; South; East; West]
+    let moveToWithDelta (x, y) direction delta =
         match direction with
-        | North -> x, y - 1
-        | South -> x, y + 1
-        | East -> x + 1, y
-        | West -> x - 1, y
+        | North -> x, y - delta
+        | South -> x, y + delta
+        | East -> x + delta, y
+        | West -> x - delta, y
+
+    let moveTo point direction = moveToWithDelta point direction 1
 
     let inv = function
         | North -> South
