@@ -39,5 +39,5 @@ module Grid2D =
 
     let toString emptyChar { map = map; width = width; height = height } =
         let getValue p = Map.tryFind p map |> Option.defaultValue emptyChar |> string
-        let produceLine y = { 0..width - 1 } |> Seq.map (fun x -> getValue (x, y)) |> String.concat ""
+        let produceLine y = { 0..width - 1 } |> Seq.map (fun x -> getValue (x, y)) |> String.concat " "
         { 0..height - 1 } |> Seq.map produceLine |> String.concat "\n"
