@@ -14,6 +14,11 @@ namespace Utils
             else gcd b (a % b)
 
         let lcm a b = a * (b / (gcd a b))
+        let getPairs elems =
+            let rec computePairs = function
+            | [] -> []
+            | x :: xs -> List.map (fun v -> (x, v)) xs :: computePairs xs
+            List.concat (computePairs elems)
 
 
     module IO = 

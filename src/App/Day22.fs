@@ -2,14 +2,6 @@ module Day22
 
 open Utils
 
-type Point3D = int * int * int
-module Point3D =
-    let ofString (s: string) =
-        match s.Split ',' with
-        | [|x; y; z|] -> (int x, int y, int z)
-        | _ -> failwithf "could not parse string %s" s
-
-
 type Cube3D = Point3D * Point3D
 module Cube3D =
     let ofString (s: string) =
@@ -26,7 +18,7 @@ module Cube3D =
     let zStart ((_, _, sz), (_, _, ez)) = max sz ez
     let zEnd ((_, _, sz), (_, _, ez)) = min sz ez
 
-    let moveDown ((sx, sy, sz), (ex, ey, ez)) = ((sx, sy, sz - 1), (ex, ey, ez - 1))
+    let moveDown ((sx, sy, sz), (ex, ey, ez)) = ((sx, sy, sz - 1L), (ex, ey, ez - 1L))
 
     let zs cube = { zEnd cube .. zStart cube }
 
@@ -50,10 +42,10 @@ let getIntersectingAt z cube groupedCubes =
     Set.filter pred candidates
 
 let getSupporting cube groupedCubes =
-    getIntersectingAt (Cube3D.zStart cube + 1) cube groupedCubes
+    getIntersectingAt (Cube3D.zStart cube + 1L) cube groupedCubes
 
 let getSupporters cube groupedCubes =
-    getIntersectingAt (Cube3D.zEnd cube - 1) cube groupedCubes
+    getIntersectingAt (Cube3D.zEnd cube - 1L) cube groupedCubes
 
 let getUniquelySupportedBy cube groupedCubes =
     let supporting = getSupporting cube groupedCubes
@@ -67,9 +59,9 @@ let moveCubeDown cube groupedCubes =
     let newGroupedCubes = removeCubeFromMapping cube groupedCubes
     let rec run current =
         let zEnd = Cube3D.zEnd current
-        let candidates = Map.tryFind (zEnd - 1) newGroupedCubes |> Option.defaultValue Set.empty
+        let candidates = Map.tryFind (zEnd - 1L) newGroupedCubes |> Option.defaultValue Set.empty
         let pred c = Cube3D.intersect c current
-        if zEnd = 1 || Set.exists pred candidates
+        if zEnd = 1L || Set.exists pred candidates
             then current
             else run (Cube3D.moveDown current)
     let newCube = run cube

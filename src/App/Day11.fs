@@ -17,12 +17,6 @@ let expandSpace multiplier galaxies =
     let expandedY = expand galaxies snd
     List.zip expandedX expandedY
 
-let getPairs elems =
-    let rec computePairs = function
-    | [] -> []
-    | x :: xs -> List.map (fun v -> (x, v)) xs :: computePairs xs
-    List.concat (computePairs elems)
-
 let solve expandedGalaxies =
     let galaxyPairs = getPairs expandedGalaxies
     let distances = List.map (fun (a, b) -> Point2D.manhattanDistanceU64 a b) galaxyPairs
