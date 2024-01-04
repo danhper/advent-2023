@@ -41,8 +41,8 @@ let computeEnergizedCellsCount grid init =
     run [init] Set.empty
 
 let computeMaxEnergizedCellsCount ({ height = height; width = width } as grid) =
-    let yStarts = List.collect (fun y -> [((0, y), East); ((width - 1, y), West)]) [0..height - 1]
-    let xStarts = List.collect (fun x -> [((x, 0), South); ((x, height - 1), North)]) [0..width - 1]
+    let yStarts = List.collect (fun y -> [((0L, y), East); ((width - 1L, y), West)]) [0L..height - 1L]
+    let xStarts = List.collect (fun x -> [((x, 0L), South); ((x, height - 1L), North)]) [0L..width - 1L]
     let energizedCounts = Array.Parallel.map (computeEnergizedCellsCount grid) (Array.ofList (yStarts @ xStarts))
     Array.max energizedCounts
 

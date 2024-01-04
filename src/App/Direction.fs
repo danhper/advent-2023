@@ -10,7 +10,7 @@ module Direction =
         | East -> x + delta, y
         | West -> x - delta, y
 
-    let moveTo point direction = moveToWithDelta point direction 1
+    let moveTo point direction = moveToWithDelta point direction 1L
 
     let inv = function
         | North -> South

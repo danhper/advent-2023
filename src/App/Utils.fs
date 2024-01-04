@@ -24,6 +24,8 @@ namespace Utils
         | None -> Some [value]
         | Some list -> Some (value :: list)
 
+        let uncurry f (a, b) = f a b
+
     module IO = 
         open System.IO
         let dataDir =

@@ -29,7 +29,7 @@ let getNextPositions position grid =
     List.choose transformNeighbor neighbors
 
 let constructGraph grid =
-    let final = (grid.width - 2, grid.height - 1)
+    let final = (grid.width - 2L, grid.height - 1L)
 
     let rec getNextNode distance previous current =
         let candidates = getNextPositions current grid
@@ -54,11 +54,11 @@ let constructGraph grid =
             let (newGraph, newQueue) = List.fold folder (graph, rest) nextNodes
             run newQueue newGraph
 
-    run (Queue.ofList [(1, 0)]) Map.empty
+    run (Queue.ofList [(1L, 0L)]) Map.empty
 
 let findPaths grid =
-    let start = (1, 0)
-    let final = (grid.width - 2, grid.height - 1)
+    let start = (1L, 0L)
+    let final = (grid.width - 2L, grid.height - 1L)
     let graph = constructGraph grid
 
     let rec run current distance seen =

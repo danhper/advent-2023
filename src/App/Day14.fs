@@ -7,10 +7,10 @@ type Direction = North | West | East | South
 let roll direction grid =
     let (sortBy, isDone, getNext) =
         match direction with
-        | North -> snd, (fun (_, y) -> y = 0), (fun (x, y) -> (x, y - 1))
-        | West -> fst, (fun (x, _) -> x = 0), (fun (x, y) -> (x - 1, y))
-        | South -> snd >> (~-), (fun (_, y) -> y = grid.height - 1), (fun (x, y) -> (x, y + 1))
-        | East -> fst >> (~-), (fun (x, _) -> x = grid.width - 1), (fun (x, y) -> (x + 1, y))
+        | North -> snd, (fun (_, y) -> y = 0L), (fun (x, y) -> (x, y - 1L))
+        | West -> fst, (fun (x, _) -> x = 0L), (fun (x, y) -> (x - 1L, y))
+        | South -> snd >> (~-), (fun (_, y) -> y = grid.height - 1L), (fun (x, y) -> (x, y + 1L))
+        | East -> fst >> (~-), (fun (x, _) -> x = grid.width - 1L), (fun (x, y) -> (x + 1L, y))
 
     let (round, newMap) = Map.partition (fun _ v -> v = 'O') grid.map
     let keys = round |> Map.keys |> Seq.toList

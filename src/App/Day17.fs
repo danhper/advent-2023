@@ -18,7 +18,7 @@ let getNextPointsLong point dir count =
         else nextPossibility (count + 1) dir :: nextPoints
 
 let traverse { map = map; height = height; width = width } getNexts =
-    let endPoint = (width - 1, height - 1)
+    let endPoint = (width - 1L, height - 1L)
     let rec run queue distances seen =
         if Set.isEmpty queue then failwith "could not find path"
         else
@@ -37,7 +37,7 @@ let traverse { map = map; height = height; width = width } getNexts =
                 let nexts = Set.union (Set.remove elem queue) (Set.ofList withDist)
                 run nexts newDistances nextSeen
     let result = run (Set.ofSeq [(0, ((-1, 0), East, 0))]) Map.empty Set.empty
-    result - Map.find (0, 0) map
+    result - Map.find (0L, 0L) map
 
 let run lines =
     let grid = Grid2D.fromLines lines |> Grid2D.map (fun _ (v: char) -> int (v - '0'))

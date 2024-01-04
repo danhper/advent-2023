@@ -14,57 +14,33 @@ let getDirection = function
 
 let parseColorInstr (color: string) =
     let value = color.Substring(0, 5)
-    (getDirection color[5], System.Convert.ToInt32(value, 16))
+    (getDirection color[5], System.Convert.ToInt64(value, 16))
 
 let pdir = anyChar |>> getDirection
 let pcolor = pstring "(#" >>. many1Satisfy isHex .>> pchar ')' |>> parseColorInstr
-let pinput = pdir .>> spaces .>>. puint64 .>> spaces .>>. pcolor |>> fun ((d, n), c) -> ((d, int n), c)
+let pinput = pdir .>> spaces .>>. pint64 .>> spaces .>>. pcolor
 
-type Map = {
-    points: Set<int * int>;
-    bounds: (int * int) * (int * int);
-}
-
-let display { points = points; bounds = ((minX, maxX), (minY, maxY)) } =
-    let getValue p = if Set.contains p points then "#" else "."
-    let produceLine y = { minX..maxX } |> Seq.map (fun x -> getValue (x, y)) |> String.concat ""
-    { minY..maxY } |> Seq.map produceLine |> String.concat "\n"
-
-let constructMap instructions =
+let computePoints instructions =
     let folder (points, position) (dir, distance) =
         let nextPos = Direction.moveToWithDelta position dir distance
-        let internalFolder pts d = Set.add (Direction.moveToWithDelta position dir d) pts
-        (Seq.fold internalFolder points { 0..distance - 1 }, nextPos)
-    let points = List.fold folder (Set.empty, (0, 0)) instructions |> fst
-    let (xs, ys) = (Set.map fst points, Set.map snd points)
-    let xBounds = (Set.minElement xs, Set.maxElement xs)
-    let yBounds = (Set.minElement ys, Set.maxElement ys)
-    { points = points; bounds = (xBounds, yBounds) }
+        (position :: points, nextPos)
+    List.fold folder (List.empty, (0L, 0L)) instructions |> fst |> List.rev
 
-let countPoints { points = points } start =
-    let rec run toVisit seen =
-        if Queue.isEmpty toVisit then Set.count seen
-        else
-            let (p, rest) = Queue.uncons toVisit
-            let candidates = Point2D.neighbors false p
-            let pred p = not (Set.contains p seen || Set.contains p points)
-            let nextPoints = List.filter pred candidates
-            let newQueue = List.fold (fun acc p -> Queue.conj p acc) rest nextPoints
-            let newSeen = List.fold (fun acc p -> Set.add p acc) seen nextPoints
-            run newQueue newSeen
-    run (Queue.ofList [start]) (Set.singleton start) + Set.count points
+let computePartialArea ((x1, y1) as p1) ((x2, y2) as p2) =
+    (x1 * y2 - y1 * x2) + Point2D.manhattanDistance p1 p2
 
-let part1 parsed =
-    let instrs = List.map fst parsed
-    let map = constructMap instrs
-    let start =
-        let ((_, _), (minY, _)) = map.bounds
-        let topPoints = Set.filter (snd >> (=) minY) map.points
-        let minTopX = Set.map fst topPoints |> Set.minElement
-        (minTopX + 1, minY + 1)
-    printfn "part 1: %d" (countPoints map start)
+let computeArea points =
+    let inPairs = List.zip points (List.tail points @ [List.head points])
+    let result = List.map (uncurry computePartialArea) inPairs
+    List.sum result / 2L + 1L
+
+let solve f parsed =
+    let instrs = List.map f parsed
+    let points = computePoints instrs
+    computeArea points
 
 let run lines =
     let parsed = List.map (Parsing.runf pinput) lines
-    part1 parsed
+    printfn "part 1: %d" (solve fst parsed)
+    printfn "part 2: %d" (solve snd parsed)
 
