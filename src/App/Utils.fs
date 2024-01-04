@@ -20,6 +20,9 @@ namespace Utils
             | x :: xs -> List.map (fun v -> (x, v)) xs :: computePairs xs
             List.concat (computePairs elems)
 
+        let prependToOption value = function
+        | None -> Some [value]
+        | Some list -> Some (value :: list)
 
     module IO = 
         open System.IO

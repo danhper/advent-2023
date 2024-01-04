@@ -15,19 +15,10 @@ module Cell =
     | '<' -> Slope West
     | '>' -> Slope East
     | c -> failwithf "invalid char %c" c
-    
-    let toChar = function
-    | Path -> '.' 
-    | Forest -> '#' 
-    | Slope North -> '^' 
-    | Slope South -> 'v'
-    | Slope West -> '<' 
-    | Slope East -> '>' 
 
     let ofCharNoSlopes = function
-        | '#' -> Forest
-        | _ -> Path
-
+    | '#' -> Forest
+    | _ -> Path
 
 let getNextPositions position grid =
     let neighbors = Grid2D.neighbors false position grid
@@ -37,34 +28,49 @@ let getNextPositions position grid =
     | _, Forest -> None
     List.choose transformNeighbor neighbors
 
+let constructGraph grid =
+    let final = (grid.width - 2, grid.height - 1)
+
+    let rec getNextNode distance previous current =
+        let candidates = getNextPositions current grid
+        let newDistance = distance + Point2D.manhattanDistance previous current
+        match candidates with
+        | [] -> None
+        | _ when current = final -> Some (current, newDistance)
+        | [next] -> getNextNode newDistance current next
+        | [p; next] when p = previous -> getNextNode newDistance current next
+        | [next; p] when p = previous -> getNextNode newDistance current next
+        | _ -> Some (current, newDistance)
+
+    let rec run queue graph =
+        match Queue.tryUncons queue with
+        | None -> graph
+        | Some (current, rest) when current = final || Map.containsKey current graph -> run rest graph
+        | Some (current, rest) ->
+            let nextCandidates = getNextPositions current grid
+            let nextNodes = List.choose (getNextNode 0 current) nextCandidates
+            let folder (g, q) ((point, _) as edge) =
+                (Map.change current (prependToOption edge) g, Queue.conj point q)
+            let (newGraph, newQueue) = List.fold folder (graph, rest) nextNodes
+            run newQueue newGraph
+
+    run (Queue.ofList [(1, 0)]) Map.empty
+
 let findPaths grid =
     let start = (1, 0)
-    let final = (grid.width - 2, grid.height - 2)
+    let final = (grid.width - 2, grid.height - 1)
+    let graph = constructGraph grid
 
-    let maxDistances = ref Map.empty
-    let rec run current distance distances seen =
-        if current = final then
-            let decideWith _ v1 v2 = max v1 v2
-            // maxDistances.Value <- Map.unionWith decideWith distances maxDistances.Value
-            [distance]
+    let rec run current distance seen =
+        if current = final then [distance]
         else
-            match Map.tryFind current maxDistances.Value with
-            | Some d when d > distance -> [d]
-            | _ ->
-                // maxDistances.Value <- Map.add current distance maxDistances.Value
-                let nextCandidates = getNextPositions current grid
-                let nextSeen = Set.add current seen
-                let nextPositions = List.filter (fun p -> not (Set.contains p nextSeen)) nextCandidates
-                let mapper p =
-                    let nextDistance = distance + Point2D.manhattanDistance current p
-                    let nextDistances = Map.add p nextDistance distances
-                    run p nextDistance nextDistances nextSeen
-                List.collect mapper nextPositions
+            let nextSeen = Set.add current seen
+            let isNew (p, _) = not (Set.contains p nextSeen)
+            let nextCandidates = List.filter isNew (Map.find current graph)
+            let mapper (p, d) = run p (distance + d) nextSeen
+            List.collect mapper nextCandidates
 
-    let result = run start 1 (Map.ofList [(start, 1)]) Set.empty
-    // let gridFoo = Grid2D.map (fun p v -> Map.tryFind p maxDistances.Value |> Option.defaultValue -1 |> sprintf "%c(%4d)" (Cell.toChar v)) grid
-    // printfn "%s" (Grid2D.toString " " gridFoo)
-    result
+    run start 0 Set.empty
 
 let run lines =
     let grid = Grid2D.fromLines lines |> Grid2D.map (fun _ c -> Cell.ofChar c)
