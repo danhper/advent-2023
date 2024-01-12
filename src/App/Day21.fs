@@ -12,16 +12,20 @@ let inline (%!) a b = (a % b + b) % b
 let getCandidates grid position =
     let neighbors = Point2D.neighbors false position
     let t (x, y) = (x %! grid.width, y %! grid.height)
-    neighbors |> List.filter (fun p -> Map.find (t p) grid.map = '.') |> Set.ofList
+    neighbors |> List.filter (fun p -> Map.find (t p) grid.map = '.')
 
 let getPotentialPositions grid start times =
-    let rec run possibilities n results =
+    let rec run possibilities n results evens odds =
         if n = times + 1L
             then results
             else
-                let nextPossibilities = Set.unionMany (Set.map (getCandidates grid) possibilities)
-                run nextPossibilities (n + 1L) (Map.add n (int64 (Set.count possibilities)) results)
-    run (Set.ofList [(start)]) 0L Map.empty
+                let folder s p = List.fold (flip Set.add) s (getCandidates grid p)
+                let nextCandidates = Set.fold folder Set.empty possibilities
+                let (nexts, count, evens, odds) =
+                    if n % 2L = 0L then (Set.difference nextCandidates odds, Set.count evens, Set.union evens possibilities, odds)
+                    else (Set.difference nextCandidates evens, Set.count odds, evens, Set.union odds possibilities)
+                run nexts (n + 1L) (Map.add n (int64 (Set.count possibilities + count)) results) evens odds
+    run (Set.ofList [(start)]) 0L Map.empty Set.empty Set.empty
 
 let solve grid start steps =
     let n = steps / grid.width
