@@ -29,20 +29,25 @@
     | "25" -> Day25.run lines
     | n -> failwithf "error: unknown day %s" n
 
-let get_args args =
+let getArgs args =
     match args with
     | [| day |] -> (day, "")
     | [| day; suffix |] -> (day, suffix)
     | _ -> failwith "usage: dotnet run <day> [--debug]"
 
+let runDay day suffix =
+    let stopwatch = System.Diagnostics.Stopwatch()
+    stopwatch.Start()
+    run day suffix
+    printfn "Day %s executed in %dms" day stopwatch.ElapsedMilliseconds
+
 [<EntryPoint>]
 let main args =
     try
-        let (day, suffix) = get_args args
-        let stopwatch = System.Diagnostics.Stopwatch()
-        stopwatch.Start()
-        run day suffix
-        printfn "Executed in %dms" stopwatch.ElapsedMilliseconds
+        let (day, suffix) = getArgs args
+        if day = "--all" then
+            Seq.iter (fun d -> runDay d suffix) (Seq.map string { 1..25 })
+            else runDay day suffix
         0
     with msg ->
         printfn "%s" msg.Message
