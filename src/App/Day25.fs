@@ -43,11 +43,50 @@ module Graph =
                 run newQueue newDistances newSeen
         run (Queue.ofList [point]) (Map.ofList [(point, 0)]) Set.empty
 
+let rec minCut graph start stop =
+    let residualGraph =
+        Map.map (fun _ v -> Set.fold (fun m v -> Map.add v 0 m) Map.empty v) graph
+
+    let rec getPath rgraph current stop seen path =
+        if current = stop then Some path
+        else
+            let nodes = Map.find current rgraph
+            let nextSeen = Set.union seen (Map.keySet nodes)
+            let predicate (node, flow) =
+                let rcapacity = 1 - flow
+                let edge = (current, node)
+                if rcapacity > 0 && not (Set.contains node seen)
+                    then getPath rgraph node stop nextSeen (Set.add (edge, rcapacity) path)
+                    else None
+            List.tryPick predicate (Map.toList nodes)
+
+    let rec calculateFlow rgraph =
+        match getPath rgraph start stop (Set.ofList [start]) Set.empty with
+        | Some edges ->
+            printfn "path found: %A" edges
+            let changeFlow from to_ delta =
+                Map.change from (Option.map (Map.change to_ (Option.map ((+) delta))))
+            let flow = Set.map snd edges |> Set.minElement
+            let folder acc ((from, to_), _) =
+                acc |> changeFlow from to_ flow |> changeFlow to_ from (-flow)
+            calculateFlow (Set.fold folder rgraph edges)
+        | None -> rgraph
+    calculateFlow residualGraph
+
 let run lines =
     let graph = Graph.ofLines lines
     let (start, _) = List.head (Map.toList graph)
     let distances = Graph.getDistances start graph
     let stop = Map.toList distances |> List.maxBy snd |> fst
+    Map.iter (fun k v -> printfn "%s: %A" k v ) graph
+
+    let rgraph = minCut graph start stop
+    Map.iter (fun k v -> printfn "%s: %A" k v ) rgraph
+    let disconnectedGraph = Map.map (fun _ v -> Map.filter (fun _ v -> v = 0) v |> Map.keySet) rgraph
+    let dGraphDistances = Graph.getDistances start disconnectedGraph
+    let group1Size = Map.count dGraphDistances
+    let group2Size = Map.count graph - group1Size
+    printfn "part 1: %d" (group1Size * group2Size)
 
     (* need to implement minimum cut between start and stop *)
     (* could not be bothered for now so just used good old networkx in Python
